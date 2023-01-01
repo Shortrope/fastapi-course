@@ -98,13 +98,14 @@ def get_post(id: int):
 
 @app.delete("/posts/{id}")
 def delete_post(id: int):
-    index = find_post_index(id)
-    print("index: ", index)
-    if index is None:
+    cursor.execute("""DELETE FROM posts WHERE id = %s RETURNING *;""", (id,))
+    deleted_post = cursor.fetchone()
+    conn.commit()
+    print(deleted_post)
+    if deleted_post is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=f"id: {id} not found!"
         )
-    del my_posts[index]
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
