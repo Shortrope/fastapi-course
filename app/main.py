@@ -56,12 +56,6 @@ my_posts = [
 ]
 
 
-def find_post_index(id):
-    for i, post in enumerate(my_posts):
-        if post["id"] == id:
-            return int(i)
-
-
 @app.get("/")
 def root():
     return {"message": "API Buddy"}
@@ -111,20 +105,46 @@ def delete_post(id: int):
 
 @app.put("/posts/{id}", status_code=status.HTTP_201_CREATED)
 def update_post(id: int, post: Post):
-    index = find_post_index(id)
-    if index is None:
+    cursor.execute(
+        """UPDATE posts SET title = %s, content = %s, published = %s WHERE id = %s RETURNING *;""",
+        (
+            post.title,
+            post.content,
+            post.published,
+            id,
+        ),
+    )
+    updated_post = cursor.fetchone()
+    conn.commit()
+    if not updated_post:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=f"id: {id} not found!"
         )
-    post_dict = post.dict()
-    # If the data in the body includes an 'id', it should match the url 'id'. If the id's
-    # do not match, it could create two items with the same id!
-    if post_dict.get("id") and post_dict.get("id") != id:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Url id ({id}) does not match the content id ('id': {post_dict['id']})",
+    return {"data": updated_post}
+
+
+@app.get("/resetdb", status_code=status.HTTP_201_CREATED)
+def reset_db():
+    print("*** RESET DB ***")
+    print("Deleting posts...")
+    cursor.execute("""SELECT * FROM posts;""")
+    all_posts = cursor.fetchall()
+    for post in all_posts:
+        print("Deleting: ", post)
+        id = post.get("id")
+        cursor.execute("""DELETE FROM posts WHERE id = %s RETURNING *;""", (id,))
+        deleted_post = cursor.fetchone()
+        conn.commit()
+        print(deleted_post)
+
+    print("Adding default posts to db...")
+    for post in my_posts:
+        print("Adding: ", post)
+        cursor.execute(
+            """INSERT INTO posts (title, content) VALUES (%s, %s) RETURNING *;""",
+            (post.get("title"), post["content"]),
         )
-    post_dict = post.dict()
-    post_dict["id"] = id
-    my_posts[index] = post_dict
-    return {"data": post_dict}
+        new_post = cursor.fetchone()
+        conn.commit()
+
+    return {"detail": "Database has been reset!"}
