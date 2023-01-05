@@ -60,13 +60,15 @@ def root():
     return {"message": "API Buddy: Using Postgres, Pscopg2 and SQLAlchemy"}
 
 
-@app.get("/posts")
+@app.get("/posts", response_model=list[schemas.PostResponse])
 def get_posts(db: Session = Depends(get_db)):
     posts = db.query(models.Post).all()
     return posts
 
 
-@app.post("/posts", status_code=status.HTTP_201_CREATED)
+@app.post(
+    "/posts", status_code=status.HTTP_201_CREATED, response_model=schemas.PostResponse
+)
 def create_posts(post: schemas.PostCreate, db: Session = Depends(get_db)):
     # new_post = models.Post(
     #     title=post.title, content=post.content, published=post.published
@@ -78,7 +80,7 @@ def create_posts(post: schemas.PostCreate, db: Session = Depends(get_db)):
     return new_post
 
 
-@app.get("/posts/{id}")
+@app.get("/posts/{id}", response_model=schemas.PostResponse)
 def get_post(id: int, db: Session = Depends(get_db)):
     post = db.query(models.Post).filter(models.Post.id == id).first()
     if not post:
@@ -100,7 +102,11 @@ def delete_post(id: int, db: Session = Depends(get_db)):
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@app.put("/posts/{id}", status_code=status.HTTP_201_CREATED)
+@app.put(
+    "/posts/{id}",
+    status_code=status.HTTP_201_CREATED,
+    response_model=schemas.PostResponse,
+)
 def update_post(id: int, post: schemas.PostCreate, db: Session = Depends(get_db)):
     post_query = db.query(models.Post).filter(models.Post.id == id)
     original_post = post_query.first()
