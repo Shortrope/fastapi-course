@@ -8,3 +8,12 @@
 - Postman
     - Body options: raw and json
 - http://localhost:8000/docs
+
+## Pydantic
+- pydantic  BaseModel
+- pydantic inheritance
+- pydantic model for requests and responses
+
+## DB
+- psycopg2  postgresql driver/connector
+- sqlalchemy    db orm
