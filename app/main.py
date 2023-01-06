@@ -66,6 +66,16 @@ def get_posts(db: Session = Depends(get_db)):
     return posts
 
 
+@app.get("/posts/{id}", response_model=schemas.PostResponse)
+def get_post(id: int, db: Session = Depends(get_db)):
+    post = db.query(models.Post).filter(models.Post.id == id).first()
+    if not post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"id: {id} not found!"
+        )
+    return post
+
+
 @app.post(
     "/posts", status_code=status.HTTP_201_CREATED, response_model=schemas.PostResponse
 )
@@ -78,16 +88,6 @@ def create_posts(post: schemas.PostCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_post)
     return new_post
-
-
-@app.get("/posts/{id}", response_model=schemas.PostResponse)
-def get_post(id: int, db: Session = Depends(get_db)):
-    post = db.query(models.Post).filter(models.Post.id == id).first()
-    if not post:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail=f"id: {id} not found!"
-        )
-    return post
 
 
 @app.delete("/posts/{id}")
