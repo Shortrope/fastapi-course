@@ -144,3 +144,40 @@ def reset_db():
         conn.commit()
 
     return {"detail": "Database has been reset!"}
+
+
+@app.get("/users", response_model=list[schemas.UserResponse])
+def get_users(db: Session = Depends(get_db)):
+    users = db.query(models.User).all()
+    return users
+
+
+@app.get("/users/{id}", response_model=schemas.UserResponse)
+def get_user(id: int, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.id == id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Id {id} not found"
+        )
+
+    return user
+
+
+@app.post(
+    "/users", status_code=status.HTTP_201_CREATED, response_model=schemas.UserResponse
+)
+def create_user(user: schemas.UserCreate):
+    user_dict = user.dict()
+    user_dict["created_at"] = "2023-01-05T08:36:15.667463-08:00"
+    user_dict["id"] = 16
+    return user_dict
+
+
+@app.put("/users/{id}")
+def update_user(id: int, user: schemas.UserCreate):
+    return {"detail": "Update User"}
+
+
+@app.delete("/users/{id}")
+def delete_user(id: int):
+    return {"detail": "Delete User"}
