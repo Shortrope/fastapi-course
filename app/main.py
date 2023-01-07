@@ -185,7 +185,11 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     return new_user
 
 
-@app.put("/users/{id}", status_code=status.HTTP_201_CREATED)
+@app.put(
+    "/users/{id}",
+    status_code=status.HTTP_201_CREATED,
+    response_model=schemas.UserResponse,
+)
 def update_user(id: int, user: schemas.UserCreate, db: Session = Depends(get_db)):
     user_query = db.query(models.User).filter(models.User.id == id)
     user_found_in_db = user_query.first()
@@ -212,7 +216,6 @@ def update_user(id: int, user: schemas.UserCreate, db: Session = Depends(get_db)
     db.commit()
 
     return user_query.first()
-    # return {"detail": "Testing"}
 
 
 @app.delete("/users/{id}")
