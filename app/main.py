@@ -110,6 +110,7 @@ def delete_post(id: int, db: Session = Depends(get_db)):
 )
 def update_post(id: int, post: schemas.PostCreate, db: Session = Depends(get_db)):
     post_query = db.query(models.Post).filter(models.Post.id == id)
+    print(post_query)
     original_post = post_query.first()
     if not original_post:
         raise HTTPException(
@@ -184,9 +185,34 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     return new_user
 
 
-@app.put("/users/{id}")
-def update_user(id: int, user: schemas.UserCreate):
-    return {"detail": "Update User"}
+@app.put("/users/{id}", status_code=status.HTTP_201_CREATED)
+def update_user(id: int, user: schemas.UserCreate, db: Session = Depends(get_db)):
+    user_query = db.query(models.User).filter(models.User.id == id)
+    user_found_in_db = user_query.first()
+
+    # check if user exists
+    if not user_found_in_db:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"{id} not found!",
+        )
+
+    # if email address changed, is it already registered
+    if user_found_in_db.email != user.email:
+        is_other_user_with_email = (
+            db.query(models.User).filter(models.User.email == user.email).first()
+        )
+        if is_other_user_with_email:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"UniqueViolation: {user.email} is registered to another user!",
+            )
+
+    user_query.update(user.dict(), synchronize_session=False)
+    db.commit()
+
+    return user_query.first()
+    # return {"detail": "Testing"}
 
 
 @app.delete("/users/{id}")
