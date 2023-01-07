@@ -216,6 +216,7 @@ def update_user(id: int, user: schemas.UserCreate, db: Session = Depends(get_db)
             )
 
     # checks passed... update the db
+    user.password = pwd_context.hash(user.password)
     user_query.update(user.dict(), synchronize_session=False)
     db.commit()
 
