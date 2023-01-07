@@ -7,6 +7,7 @@ import psycopg2
 from fastapi import Depends, FastAPI, HTTPException, Response, status
 from fastapi.params import Body
 from psycopg2.extras import RealDictCursor
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from . import models, schemas
@@ -166,11 +167,21 @@ def get_user(id: int, db: Session = Depends(get_db)):
 @app.post(
     "/users", status_code=status.HTTP_201_CREATED, response_model=schemas.UserResponse
 )
-def create_user(user: schemas.UserCreate):
-    user_dict = user.dict()
-    user_dict["created_at"] = "2023-01-05T08:36:15.667463-08:00"
-    user_dict["id"] = 16
-    return user_dict
+def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    # check if email already used
+    email_query = db.query(models.User).filter(models.User.email == user.email)
+    if email_query.first():
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Conflict: {user.email} already exists!",
+        )
+
+    new_user = models.User(**user.dict())
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    return new_user
 
 
 @app.put("/users/{id}")
