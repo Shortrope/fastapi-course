@@ -6,6 +6,7 @@ from typing import Optional
 import psycopg2
 from fastapi import Depends, FastAPI, HTTPException, Response, status
 from fastapi.params import Body
+from passlib.context import CryptContext
 from psycopg2.extras import RealDictCursor
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -13,6 +14,7 @@ from sqlalchemy.orm import Session
 from . import models, schemas
 from .database import engine, get_db
 
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
@@ -177,6 +179,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
             detail=f"Conflict: {user.email} already exists!",
         )
 
+    user.password = pwd_context.hash(user.password)
     new_user = models.User(**user.dict())
     db.add(new_user)
     db.commit()
