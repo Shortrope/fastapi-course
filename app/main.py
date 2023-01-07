@@ -201,7 +201,7 @@ def update_user(id: int, user: schemas.UserCreate, db: Session = Depends(get_db)
             detail=f"{id} not found!",
         )
 
-    # if email address changed, is it already registered
+    # if email address changed, is it already registered to another user
     if user_found_in_db.email != user.email:
         is_other_user_with_email = (
             db.query(models.User).filter(models.User.email == user.email).first()
@@ -212,12 +212,22 @@ def update_user(id: int, user: schemas.UserCreate, db: Session = Depends(get_db)
                 detail=f"UniqueViolation: {user.email} is registered to another user!",
             )
 
+    # checks passed... update the db
     user_query.update(user.dict(), synchronize_session=False)
     db.commit()
 
     return user_query.first()
 
 
-@app.delete("/users/{id}")
-def delete_user(id: int):
-    return {"detail": "Delete User"}
+@app.delete("/users/{id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_user(id: int, db: Session = Depends(get_db)):
+    user_query = db.query(models.User).filter(models.User.id == id)
+    user = user_query.first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Id {id} not found!"
+        )
+
+    user_query.delete(synchronize_session=False)
+    db.commit()
+    return {"detail": f"Deleted user with id: {id}"}
