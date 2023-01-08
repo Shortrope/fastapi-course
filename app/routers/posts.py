@@ -4,16 +4,16 @@ from sqlalchemy.orm import Session
 from .. import models, schemas
 from ..database import get_db
 
-router = APIRouter()
+router = APIRouter(prefix="/posts")
 
 
-@router.get("/posts", response_model=list[schemas.PostResponse])
+@router.get("/", response_model=list[schemas.PostResponse])
 def get_posts(db: Session = Depends(get_db)):
     posts = db.query(models.Post).all()
     return posts
 
 
-@router.get("/posts/{id}", response_model=schemas.PostResponse)
+@router.get("/{id}", response_model=schemas.PostResponse)
 def get_post(id: int, db: Session = Depends(get_db)):
     post = db.query(models.Post).filter(models.Post.id == id).first()
     if not post:
@@ -24,7 +24,7 @@ def get_post(id: int, db: Session = Depends(get_db)):
 
 
 @router.post(
-    "/posts", status_code=status.HTTP_201_CREATED, response_model=schemas.PostResponse
+    "/", status_code=status.HTTP_201_CREATED, response_model=schemas.PostResponse
 )
 def create_posts(post: schemas.PostCreate, db: Session = Depends(get_db)):
     # new_post = models.Post(
@@ -37,7 +37,7 @@ def create_posts(post: schemas.PostCreate, db: Session = Depends(get_db)):
     return new_post
 
 
-@router.delete("/posts/{id}")
+@router.delete("/{id}")
 def delete_post(id: int, db: Session = Depends(get_db)):
     post = db.query(models.Post).filter(models.Post.id == id)
     if post.first() is None:
@@ -50,7 +50,7 @@ def delete_post(id: int, db: Session = Depends(get_db)):
 
 
 @router.put(
-    "/posts/{id}",
+    "/{id}",
     status_code=status.HTTP_201_CREATED,
     response_model=schemas.PostResponse,
 )

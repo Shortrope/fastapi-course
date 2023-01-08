@@ -4,16 +4,16 @@ from sqlalchemy.orm import Session
 from .. import models, schemas, utils
 from ..database import get_db
 
-router = APIRouter()
+router = APIRouter(prefix="/users")
 
 
-@router.get("/users", response_model=list[schemas.UserResponse])
+@router.get("/", response_model=list[schemas.UserResponse])
 def get_users(db: Session = Depends(get_db)):
     users = db.query(models.User).all()
     return users
 
 
-@router.get("/users/{id}", response_model=schemas.UserResponse)
+@router.get("/{id}", response_model=schemas.UserResponse)
 def get_user(id: int, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.id == id).first()
     if not user:
@@ -25,7 +25,7 @@ def get_user(id: int, db: Session = Depends(get_db)):
 
 
 @router.post(
-    "/users", status_code=status.HTTP_201_CREATED, response_model=schemas.UserResponse
+    "/", status_code=status.HTTP_201_CREATED, response_model=schemas.UserResponse
 )
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     # check if email already used
@@ -46,7 +46,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
 
 @router.put(
-    "/users/{id}",
+    "/{id}",
     status_code=status.HTTP_201_CREATED,
     response_model=schemas.UserResponse,
 )
@@ -80,7 +80,7 @@ def update_user(id: int, user: schemas.UserCreate, db: Session = Depends(get_db)
     return user_query.first()
 
 
-@router.delete("/users/{id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_user(id: int, db: Session = Depends(get_db)):
     user_query = db.query(models.User).filter(models.User.id == id)
     user = user_query.first()
