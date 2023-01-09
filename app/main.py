@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from . import models
 from .database import engine, get_db
-from .routers import posts, users
+from .routers import auth, posts, users
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -61,6 +61,7 @@ def root():
 
 app.include_router(posts.router)
 app.include_router(users.router)
+app.include_router(auth.router)
 
 
 @app.get("/resetdb", status_code=status.HTTP_201_CREATED)
