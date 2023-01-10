@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from .. import models, oauth2, schemas, utils
@@ -8,8 +9,15 @@ router = APIRouter(tags=["Authentication"])
 
 
 @router.post("/login")
-def login(credentials: schemas.UserCredentials, db: Session = Depends(get_db)):
-    user = db.query(models.User).filter(models.User.email == credentials.email).first()
+def login(
+    credentials: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)
+):
+    # OAuth2passwordRequestForm returns a dict like object with specific keys:
+    #     username and password
+    # The client send this as 'form' data not raw json in the body
+    user = (
+        db.query(models.User).filter(models.User.email == credentials.username).first()
+    )
 
     if not user:
         raise HTTPException(
