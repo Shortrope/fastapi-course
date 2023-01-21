@@ -35,13 +35,12 @@ def get_post(
 def create_posts(
     post: schemas.PostCreate,
     db: Session = Depends(get_db),
-    user_id: int = Depends(oauth2.get_current_user),
+    current_user: schemas.TokenData = Depends(oauth2.get_current_user),
 ):
-    print(user_id)
     # new_post = models.Post(
     #     title=post.title, content=post.content, published=post.published
     # )
-    new_post = models.Post(**post.dict())
+    new_post = models.Post(owner_id=current_user.id, **post.dict())
     db.add(new_post)
     db.commit()
     db.refresh(new_post)
