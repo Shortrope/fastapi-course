@@ -44,12 +44,13 @@ my_posts = [
     {
         "title": "Top beaches in Florida",
         "content": "Check out these awesome beaches",
-        "id": 1,
+        "owner_id": 1,
     },
+    {"title": "Favorite Foods", "content": "I like pizza", "owner_id": 2},
     {
-        "title": "Favorite Foods",
-        "content": "I like pizza",
-        "id": 2,
+        "title": "Rescue ToolKit",
+        "content": "The ultimate linux recovery DVD",
+        "owner_id": 3,
     },
 ]
 
@@ -82,8 +83,8 @@ def reset_db():
     for post in my_posts:
         print("Adding: ", post)
         cursor.execute(
-            """INSERT INTO posts (title, content) VALUES (%s, %s) RETURNING *;""",
-            (post.get("title"), post["content"]),
+            """INSERT INTO posts (title, content, owner_id) VALUES (%s, %s, %s) RETURNING *;""",
+            (post.get("title"), post["content"], post.get("owner_id")),
         )
         new_post = cursor.fetchone()
         conn.commit()
