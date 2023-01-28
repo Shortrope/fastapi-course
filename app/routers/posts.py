@@ -9,9 +9,16 @@ router = APIRouter(prefix="/posts", tags=["Posts"])
 
 @router.get("/", response_model=list[schemas.PostResponse])
 def get_posts(
-    db: Session = Depends(get_db), user_id: int = Depends(oauth2.get_current_user)
+    db: Session = Depends(get_db), limit: int = 10, skip: int = 0, search: str = ""
 ):
-    posts = db.query(models.Post).all()
+    print(limit)
+    posts = (
+        db.query(models.Post)
+        .filter(models.Post.title.contains(search))
+        .limit(limit)
+        .offset(skip)
+        .all()
+    )
     return posts
 
 
@@ -19,7 +26,6 @@ def get_posts(
 def get_post(
     id: int,
     db: Session = Depends(get_db),
-    user_id: int = Depends(oauth2.get_current_user),
 ):
     post = db.query(models.Post).filter(models.Post.id == id).first()
     if not post:
