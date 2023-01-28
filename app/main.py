@@ -1,14 +1,13 @@
 # Start server: uvicorn main:app --reload
+
 import time
 
 import psycopg2
-from fastapi import Depends, FastAPI, HTTPException, Response, status
-from fastapi.params import Body
+from fastapi import FastAPI, status
 from psycopg2.extras import RealDictCursor
-from sqlalchemy.orm import Session
 
 from . import models
-from .database import engine, get_db
+from .database import engine
 from .routers import auth, posts, users
 
 models.Base.metadata.create_all(bind=engine)
