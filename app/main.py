@@ -7,6 +7,7 @@ from fastapi import FastAPI, status
 from psycopg2.extras import RealDictCursor
 
 from . import models
+from .config import settings
 from .database import engine
 from .routers import auth, posts, users
 
@@ -15,10 +16,10 @@ models.Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
 
-HOST = "localhost"
-DB = "fastapi"
-USER = "fastapi"
-PASSWORD = "fastapi"
+HOST = settings.db_host
+DB = settings.db_name
+USER = settings.db_user
+PASSWORD = settings.db_password
 
 # Give psycopg 3 seconds to connect
 for i in range(3):
