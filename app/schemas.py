@@ -51,3 +51,12 @@ class PostResponse(PostBase):
 
     class Config:
         orm_mode = True
+
+
+class Vote(BaseModel):
+    post_id: int
+    direction: int
+
+
+class VoteResponse(Vote):
+    user_id: int

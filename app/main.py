@@ -9,7 +9,7 @@ from psycopg2.extras import RealDictCursor
 from . import models
 from .config import settings
 from .database import engine
-from .routers import auth, posts, users
+from .routers import auth, posts, users, vote
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -63,6 +63,7 @@ def root():
 app.include_router(posts.router)
 app.include_router(users.router)
 app.include_router(auth.router)
+app.include_router(vote.router)
 
 
 @app.get("/resetdb", status_code=status.HTTP_201_CREATED)
