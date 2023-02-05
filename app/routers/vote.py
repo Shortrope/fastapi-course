@@ -13,6 +13,14 @@ def vote(
     db: Session = Depends(get_db),
     current_user: schemas.TokenData = Depends(oauth2.get_current_user),
 ):
+
+    post = db.query(models.Post).filter(models.Post.id == vote.post_id).first()
+    if not post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Post id {vote.post_id} not found.",
+        )
+
     vote_query = db.query(models.Vote).filter(
         models.Vote.post_id == vote.post_id, models.Vote.user_id == current_user.id
     )
@@ -33,7 +41,7 @@ def vote(
         if not vote_query_result:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Vode not found",
+                detail=f"Vote not found",
             )
         vote_query.delete(synchronize_session=False)
         db.commit()
