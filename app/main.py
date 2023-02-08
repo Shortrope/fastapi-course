@@ -11,6 +11,9 @@ from .config import settings
 from .database import engine
 from .routers import auth, posts, users, vote
 
+# alembic now creates the tables but this will not break anything
+# I think this is preferable since I would have to manually run the alembic
+# command to get started
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
