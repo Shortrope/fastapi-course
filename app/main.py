@@ -4,6 +4,7 @@ import time
 
 import psycopg2
 from fastapi import FastAPI, status
+from fastapi.middleware.cors import CORSMiddleware
 from psycopg2.extras import RealDictCursor
 
 from . import models
@@ -18,6 +19,15 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
+origins = ["*"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 HOST = settings.db_host
 DB = settings.db_name
